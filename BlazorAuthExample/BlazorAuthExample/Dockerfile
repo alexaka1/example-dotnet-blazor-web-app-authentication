@@ -7,6 +7,7 @@ EXPOSE 8081
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 ARG TARGETARCH
+RUN dotnet workload install wasm-tools;
 WORKDIR /src
 COPY --link ["*.props", "*.config", "./"]
 COPY --link ["BlazorAuthExample/BlazorAuthExample/BlazorAuthExample.csproj", "BlazorAuthExample/BlazorAuthExample/"]
