@@ -47,6 +47,7 @@ builder.Services.AddScoped<JwtTokenProvider>();
 builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 builder.Services.TryAddEnumerable(
     ServiceDescriptor.Scoped<CircuitHandler, UserCircuitHandler>());
+builder.Services.AddHealthChecks();
 var app = builder.Build();
 
 app.UseMiddleware<BlazorSafeScopedServicesMiddleware>();
@@ -84,5 +85,7 @@ app.MapRazorComponents<App>()
         */
     .AllowAnonymous()
     ;
+
+app.MapHealthChecks("/api/healthz").AllowAnonymous();
 
 app.Run();

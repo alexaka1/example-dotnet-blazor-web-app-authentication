@@ -1,0 +1,11 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: BlazorAuthExample/BlazorAuthExample/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=${ASPNETCORE_URLS:-http://*:8080}
+      - DISTROLESS_HEALTHCHECKS_URI=${DISTROLESS_HEALTHCHECKS_URI:-http://localhost:8080/api/healthz}
+    healthcheck:
+      test: [ "CMD", "/healthchecks/Distroless.HealthChecks" ]
