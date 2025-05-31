@@ -1,6 +1,30 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)"/>
-        <FocusOnNavigate RouteData="routeData" Selector="h1"/>
-    </Found>
+﻿@using BlazorAuthExample.Components.Layout
+@using BlazorAuthExample.Components.Pages.Account
+@using Microsoft.AspNetCore.Components.Authorization
+<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }">
+  <Found Context="routeData">
+    <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)">
+      <NotAuthorized>
+        @if (!context.User.IsLoggedIn())
+        {
+          <RedirectToLogin/>
+        }
+        else
+        {
+          <p>You are not authorized to access this resource.</p>
+        }
+      </NotAuthorized>
+      <Authorizing>
+        Authorizing...
+      </Authorizing>
+    </AuthorizeRouteView>
+    <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)"/>
+  </Found>
+  <NotFound>
+    @* this view does not seem to work because of https://github.com/dotnet/aspnetcore/issues/45654
+        and also because Routes.razor is not interactive (which is intended) *@
+    <LayoutView Layout="@typeof(MainLayout)">
+      <NotFoundPage />
+    </LayoutView>
+  </NotFound>
 </Router>

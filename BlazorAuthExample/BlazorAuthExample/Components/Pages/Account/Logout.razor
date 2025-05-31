@@ -1,0 +1,25 @@
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [AllowAnonymous]
+@page "/account/logout"
+@using System.Diagnostics
+@using BlazorAuthExample.Auth
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+@code {
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Debug.Assert(AuthenticationStateProvider is CustomAuthenticationStateProvider);
+        Debug.Assert(HttpContext is not null);
+        ((CustomAuthenticationStateProvider)AuthenticationStateProvider)
+            .LogoutUser();
+        HttpContext.Response.Cookies.Delete(CustomAuthenticationOptions.CookieNameAuthToken);
+        HttpContext.Response.Cookies.Delete(CustomAuthenticationOptions.CookieNameAuthRefreshToken);
+        NavigationManager.NavigateTo("/", true);
+    }
+}

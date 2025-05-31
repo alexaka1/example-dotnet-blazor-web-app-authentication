@@ -1,0 +1,32 @@
+@* match any path that is not /api *@
+@page "/{path:regex(^(?!api).*$):nonfile}"
+@using System.Diagnostics
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
+
+<PageTitle>Not found</PageTitle>
+<div class="col-span-full">
+  <p role="alert"
+     class="text-title-large">You have found this page, but there is nothing at this address</p>
+  <NavLink href="/" class="underline text-primary text-body-large">Go to the home page</NavLink>
+</div>
+
+@code {
+
+  [Parameter]
+  public string? Path { get; set; }
+
+
+  [CascadingParameter]
+  private HttpContext? HttpContext { get; set; }
+
+  protected override void OnInitialized()
+  {
+    Debug.Assert(!RendererInfo.IsInteractive, "Not found page should not be rendered in interactive mode!");
+    if (HttpContext?.Response.HasStarted is false)
+    {
+      HttpContext.Response.StatusCode = 404;
+    }
+  }
+
+}

@@ -1,4 +1,6 @@
 ﻿@page "/counter"
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
 @rendermode InteractiveAuto
 
 <PageTitle>Counter</PageTitle>
@@ -10,11 +12,11 @@
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
-    private int currentCount = 0;
+  private int currentCount;
 
-    private void IncrementCount()
-    {
-        currentCount++;
-    }
+  private void IncrementCount()
+  {
+    currentCount++;
+  }
 
 }

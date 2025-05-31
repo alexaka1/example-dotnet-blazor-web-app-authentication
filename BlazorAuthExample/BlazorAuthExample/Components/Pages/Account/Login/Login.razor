@@ -1,0 +1,93 @@
+@page "/account/login"
+@using System.Diagnostics
+@using BlazorAuthExample.Auth
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [AllowAnonymous]
+@inject JwtTokenProvider JwtTokenProvider
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+<h3>Login</h3>
+
+@code {
+
+  [CascadingParameter]
+  private HttpContext? HttpContext { get; set; }
+
+  [CascadingParameter]
+  private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+  [SupplyParameterFromQuery(Name = "returnUrl")]
+  [Parameter]
+  public string? ReturnUrl { get; set; }
+
+  [SupplyParameterFromForm]
+  public LoginForm? LoginForm { get; set; }
+
+  protected override async Task OnInitializedAsync()
+  {
+    LoginForm ??= new LoginForm();
+    if (AuthenticationState is not null)
+    {
+      var user = await AuthenticationState;
+      if (!user.User.IsLoggedIn())
+      {
+        var refreshToken = JwtTokenProvider.GetRefreshTokenFromClient();
+        if (refreshToken is not null)
+        {
+          var exchange = await AuthService.ExchangeRefreshTokenAsync(refreshToken);
+          if (exchange is { Success: true, Data: { Token: not null, RefreshToken: not null } })
+          {
+            var token = exchange.Data.Token;
+            refreshToken = exchange.Data.RefreshToken;
+            JwtTokenProvider.PersistTokenToClient(token);
+            JwtTokenProvider.PersistRefreshTokenToClient(refreshToken);
+            ReturnUrl = /*UriHelper.SanitizeRedirectUri*/(ReturnUrl) ?? "/";
+            NavigationManager.NavigateTo(ReturnUrl, true, true);
+            return;
+          }
+
+          HttpContext?.Response.Cookies.Delete(CustomAuthenticationOptions.CookieNameAuthRefreshToken);
+        }
+
+        return;
+      }
+    }
+  }
+
+  public async Task LoginUser()
+  {
+    var authResult = await AuthService.LoginAsync();
+
+    if (!authResult.Success)
+    {
+      await HandleInvalidSubmit();
+      ErrorText = authResult.ErrorMessage;
+      return;
+    }
+
+    Debug.Assert(authResult.Data.Token is not null);
+    Debug.Assert(AuthenticationStateProvider is CustomAuthenticationStateProvider);
+    ((CustomAuthenticationStateProvider)AuthenticationStateProvider)
+      .AuthenticateUser(authResult.Data.Token, authResult.Data.RefreshToken);
+    JwtTokenProvider.PersistTokenToClient(authResult.Data.Token);
+    if (!string.IsNullOrWhiteSpace(authResult.Data.RefreshToken))
+    {
+      JwtTokenProvider.PersistRefreshTokenToClient(authResult.Data.RefreshToken);
+    }
+
+    ReturnUrl = /*UriHelper.SanitizeRedirectUri*/(ReturnUrl);
+    if (authResult.Data.SecondFactorOptions.Count is 0)
+    {
+      NavigationManager.NavigateTo(ReturnUrl, replace: true);
+      return;
+    }
+  }
+
+  private Task HandleInvalidSubmit()
+  {
+    Debug.Assert(LoginForm is not null);
+    return Task.CompletedTask;
+  }
+
+}

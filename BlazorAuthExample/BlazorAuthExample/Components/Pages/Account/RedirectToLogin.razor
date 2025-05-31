@@ -1,0 +1,14 @@
+@inject NavigationManager NavigationManager
+
+@code {
+
+  protected override Task OnInitializedAsync()
+  {
+    NavigationManager.NavigateTo(
+      $"/account/login?returnUrl={Uri.EscapeDataString(new Uri(NavigationManager.Uri).PathAndQuery)}",
+      forceLoad: true);
+
+    return Task.CompletedTask;
+  }
+
+}
