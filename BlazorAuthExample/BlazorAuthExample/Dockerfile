@@ -9,11 +9,11 @@ ARG BUILD_CONFIGURATION=Release
 ARG TARGETARCH
 RUN dotnet workload install wasm-tools;
 WORKDIR /src
-COPY --link ["*.props", "*.config", "./"]
-COPY --link ["BlazorAuthExample/BlazorAuthExample/BlazorAuthExample.csproj", "BlazorAuthExample/BlazorAuthExample/"]
-COPY --link ["BlazorAuthExample/BlazorAuthExample.Client/BlazorAuthExample.Client.csproj", "BlazorAuthExample/BlazorAuthExample.Client/"]
+COPY ["*.props", "*.config", "./"]
+COPY ["BlazorAuthExample/BlazorAuthExample/BlazorAuthExample.csproj", "BlazorAuthExample/BlazorAuthExample/"]
+COPY ["BlazorAuthExample/BlazorAuthExample.Client/BlazorAuthExample.Client.csproj", "BlazorAuthExample/BlazorAuthExample.Client/"]
 RUN dotnet restore "BlazorAuthExample/BlazorAuthExample/BlazorAuthExample.csproj" -a $TARGETARCH
-COPY --link . .
+COPY . .
 WORKDIR "/src/BlazorAuthExample/BlazorAuthExample"
 
 FROM build AS publish
